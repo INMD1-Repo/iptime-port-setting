@@ -1,0 +1,35 @@
+{
+  "name": "iptime-port-setting",
+  "version": "1.0.0",
+  "description": "외부에서 내부에 설정된 iptime 포트포워딩을 설정 할수 있습니다.",
+  "main": "bin/app.js",
+  "bin": {
+    "iport": "bin/app.js"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.0",
+    "commander": "^8.3.0",
+    "inquirer": "^8.2.0",
+    "listr": "^0.14.3",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \\\"Error: no test specified\\\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/INMD1/iptime-port-setting.git"
+  },
+  "keywords": [
+    "Port",
+    "forwarding"
+  ],
+  "author": "INMD1",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/INMD1/iptime-port-setting/issues"
+  },
+  "homepage": "https://github.com/INMD1/iptime-port-setting#readme"
+}
