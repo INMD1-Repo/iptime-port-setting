@@ -25,6 +25,8 @@ if (options.list) {
 	const data = fs.readFileSync(`${path.dirname(__filename)}/list.json`);
 	const json = JSON.parse(data);
 	console.log(`이 iptime 기기는 최대 ${json.max} 까지 설정할수 있고 \n현재 ${json.count} 까지 만들었습니다.`)
+	listdata();
+	urlcheck();
 	listprint();
 } else if (options.re) {
 	inquirer.prompt([{
@@ -57,6 +59,8 @@ if (options.list) {
 				ask();
 			}
 		});
+} else if (options.creat) {
+	addport();
 }
 
 //url이 json으로 저장되어 있는지 확인
@@ -125,7 +129,61 @@ function listprint() {
 
 //포트 추가하기
 function addport() {
+	let arr = {};
+	inquirer.prompt([{
+		type: "input",
+		name: "name",
+		message: '지정할 이름을 선택해주세요.'
 
+	}]);
+	inquirer.prompt([{
+		type: "input",
+		name: "answer4",
+		message: '외부에서 내보낼 포트를 입력해주세요. (범위일시 10-10로 입력바람)'
+	}])
+	inquirer.prompt([{
+		type: "input",
+		name: "answer4",
+		message: '내부ip를 입력해주세요.'
+
+	}])
+	inquirer.prompt([{
+		type: "input",
+		name: "answer4",
+		message: '내부포트를 입력해주세요'
+
+	}]);
+	// const { urlt } = require("./config.json");
+	// var request = require('request');
+
+	// const headers = {
+	// 	'Content-Type': 'application/json'
+	// };
+
+	// const dataString = [
+	// 	{
+	// 		"name": "tes1",
+	// 		"sourcePort": "8888-8888",
+	// 		"protocol": "tcp",
+	// 		"ip": "192.168.42.131",
+	// 		"destPort": 8888
+	// 	}
+	// ];
+
+	// const options = {
+	// 	url: 'http://192.168.42.130:3000/port-foward',
+	// 	method: 'POST',
+	// 	headers: headers,
+	// 	body: dataString
+	// };
+
+	// function callback(error, response, body) {
+	// 	if (!error && response.statusCode == 200) {
+	// 		console.log(body);
+	// 	}
+	// }
+
+	// request(options, callback);
 }
 
 //포트포워드 삭제하기
@@ -160,7 +218,7 @@ function delask(input) {
 		.then(function (answer) {
 			if (answer.deletask == "y") {
 				const options = {
-					url: urlt + ":3000/port-foward/" + json.data[set].id,
+					url: urlt + ":3000/port-foward/" + json.data[input].id,
 					method: 'DELETE'
 				};
 
