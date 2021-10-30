@@ -6,10 +6,7 @@ const inquirer = require('inquirer');
 const request = require("request");
 const fs = require('fs');
 const Table = require('cli-table3');
-
-//기본적으로 시작체크
-listdata();
-urlcheck();
+const { resolve } = require('path');
 
 //옵션
 program
@@ -22,12 +19,13 @@ program.parse(process.argv);
 const options = program.opts();
 
 if (options.list) {
-	const data = fs.readFileSync(`${path.dirname(__filename)}/list.json`);
-	const json = JSON.parse(data);
-	console.log(`이 iptime 기기는 최대 ${json.max} 까지 설정할수 있고 \n현재 ${json.count} 까지 만들었습니다.`)
-	listdata();
-	urlcheck();
-	listprint();
+	let co = urlcheck()
+	if(co == 1){
+		listget();
+		listprint();
+	}
+
+
 } else if (options.re) {
 	inquirer.prompt([{
 		type: "input",
@@ -63,25 +61,36 @@ if (options.list) {
 	addport();
 }
 
+
 //url이 json으로 저장되어 있는지 확인
 function urlcheck() {
-	fs.readFile(`${path.dirname(__filename)}/config.json`, 'utf8', (err, data) => {
-		if (err) {
-			inquirer.prompt([{
-				type: "input",
-				name: "check",
-				message: 'url등록안되어 있습니다. 입력해서 등록해주세요 [url]'
-			}])
-				.then(function (answer) {
-					if (answer.check == "") {
-						console.log("입력이 되지않았습니다.");
-						urlcheck();
-					} else if (answer.check != "") {
-						add(answer.check);
-						dataget();
-					}
-				});
-		}
+	try {
+		fs.readFileSync(`${path.dirname(__filename)}/config.json`, 'utf8');
+		return 1;
+	} catch (error) {
+		inquirer.prompt([{
+			type: "input",
+			name: "check",
+			message: 'url등록안되어 있습니다.\n입력해서 등록해주세요 [url]: '
+		}])
+			.then(function (answer) {
+				if (answer.check == "") {
+					console.log("입력이 되지않았습니다.");
+					urlcheck();
+				} else if (answer.check != "") {
+					console.log("데이터가 입력되었습니다. 다시 명령어를 입력해주세요.");
+					add(answer.check);
+				}
+			});
+	}
+
+}
+
+//리스트 불려오기
+function listget() {
+	const { urlt } = require("./config.json");
+	request(`${urlt}:3000/port-foward`, function (error, response, body) {
+		fs.writeFileSync(`${path.dirname(__filename)}/list.json`, body);
 	});
 }
 
@@ -93,14 +102,6 @@ function add(url) {
 	const json = JSON.stringify(j)
 	fs.writeFile(`${path.dirname(__filename)}/config.json`, json, 'utf8', function (err, data) {
 		console.log("등록이 완료되었습니다.");
-	});
-}
-
-//api에 연결해서 리스트 가지고오기
-function listdata() {
-	const { urlt } = require("./config.json");
-	request(`${urlt}:3000/port-foward`, function (error, response, body) {
-		fs.writeFileSync(`${path.dirname(__filename)}/list.json`, body);
 	});
 }
 
@@ -129,61 +130,126 @@ function listprint() {
 
 //포트 추가하기
 function addport() {
-	let arr = {};
+	let arr = new Array;
+	let count = 0;
 	inquirer.prompt([{
 		type: "input",
-		name: "name",
+		name: "input",
 		message: '지정할 이름을 선택해주세요.'
 
-	}]);
-	inquirer.prompt([{
-		type: "input",
-		name: "answer4",
-		message: '외부에서 내보낼 포트를 입력해주세요. (범위일시 10-10로 입력바람)'
-	}])
-	inquirer.prompt([{
-		type: "input",
-		name: "answer4",
-		message: '내부ip를 입력해주세요.'
+	}]).then(function (answer) {
+		arr[0] = answer.input;
+		inquirer.prompt([{
+			type: "input",
+			name: "input",
+			message: '외부에서 내보낼 포트를 입력해주세요. (범위일시 10-10로 입력바람)'
 
-	}])
-	inquirer.prompt([{
-		type: "input",
-		name: "answer4",
-		message: '내부포트를 입력해주세요'
+		}]).then(function (answer) {
+			arr[1] = answer.input;
+			inquirer.prompt([{
+				type: "input",
+				name: "input",
+				message: '내부ip를 입력해주세요.'
 
-	}]);
-	// const { urlt } = require("./config.json");
-	// var request = require('request');
+			}]).then(function (answer) {
+				arr[2] = answer.input;
+				inquirer.prompt([{
+					type: "input",
+					name: "input",
+					message: '내부포트를 입력해주세요'
 
-	// const headers = {
-	// 	'Content-Type': 'application/json'
-	// };
+				}]).then(function (answer) {
+					arr[3] = answer.input;
+					let table = new Table({
+						head: ['name', 'sourcePort', 'ip', 'protocol', 'destPort']
+						, colWidths: [12, 16, 16, 18, 10],
 
-	// const dataString = [
-	// 	{
-	// 		"name": "tes1",
-	// 		"sourcePort": "8888-8888",
-	// 		"protocol": "tcp",
-	// 		"ip": "192.168.42.131",
-	// 		"destPort": 8888
-	// 	}
-	// ];
+					});
+					table.push([
+						arr[0],
+						arr[1],
+						arr[2],
+						"tcp/udp",
+						arr[3]
+					]);
+					console.log(table.toString());
+					inquirer.prompt([{
+						type: "input",
+						name: "yn",
+						message: '설정을 iptime으로 보내겟습니까?'
 
-	// const options = {
-	// 	url: 'http://192.168.42.130:3000/port-foward',
-	// 	method: 'POST',
-	// 	headers: headers,
-	// 	body: dataString
-	// };
+					}]).then(function (answer) {
+						if (answer.yn == "y") {
+							const { urlt } = require("./config.json");
+							const headers = {
+								'Content-Type': 'application/json'
+							};
 
-	// function callback(error, response, body) {
-	// 	if (!error && response.statusCode == 200) {
-	// 		console.log(body);
-	// 	}
-	// }
+							const dataString = [
+								{
+									"name": arr[0],
+									"sourcePort": arr[1],
+									"protocol": "tcp",
+									"ip": arr[2],
+									"destPort": arr[3]
+								}
+							];
 
-	// request(options, callback);
+							const options = {
+								url: urlt + ":3000/port-foward",
+								method: 'POST',
+								headers: headers,
+								body: JSON.stringify(dataString)
+							};
+
+							function callback(error, response, body) {
+								const json = JSON.parse(body)
+								if (json.result[0] != []) {
+									let table = new Table({
+										head: ['name', 'sourcePort', 'ip', 'protocol', 'destPort']
+										, colWidths: [12, 16, 16, 18, 10],
+
+									});
+									table.push([
+										json.result[0].id,
+										json.result[0].text.name,
+										json.result[0].text.sourcePort,
+										json.result[0].text.ip,
+										json.result[0].text.destPort,
+									]);
+									console.log(table.toString());
+									console.log("성공적으로 데이터를 보냈서요!");
+								} else {
+									const json = JSON.parse(body);
+									if (!error && response.statusCode == 200) {
+										let table = new Table({
+											head: ['name', 'sourcePort', 'ip', 'protocol', 'destPort']
+											, colWidths: [12, 16, 16, 18, 10],
+
+										});
+										table.push([
+											json.result[0].id,
+											json.result[0].text.name,
+											json.result[0].text.sourcePort,
+											json.result[0].text.ip,
+											json.result[0].text.destPort,
+										]);
+										console.log("음... 데이터가 잘못 된거 같해요.. 다시 보시고 시도해 주세요.");
+										console.log(table.toString());
+
+									}
+								}
+							}
+							request(options, callback);
+						} else {
+							console.log("사용자가 취소를 해서 종료 합니다.");
+							return;
+						}
+					});
+				});
+			});
+		});
+	});
 }
 
 //포트포워드 삭제하기
@@ -224,11 +290,11 @@ function delask(input) {
 
 				function callback(error, response, body) {
 					if (!error && response.statusCode == 200) {
-						console.log(body);
+						fs.writeFileSync(`${path.dirname(__filename)}/list.json`, body);
 					}
 				}
 				request(options, callback);
-				console.log("위에서 오류가 나지 않으면 삭제요청을 성공적으로 보낸거니 약 1분 젇도 기다려주세요.")
+				console.log("아래에 오류가 나지 않으면 삭제요청을 성공적으로 보낸거니 약 1분 젇도 기다려주세요.");
 			} else if (answer.deletask == "n") {
 				console.log("사용자가 취소를 해서 종료 합니다.");
 				return;
