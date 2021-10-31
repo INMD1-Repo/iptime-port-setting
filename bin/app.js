@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const { Command } = require('commander');
 const program = new Command();
+const path = require('path')
 const inquirer = require('inquirer');
 const request = require("request");
 const fs = require('fs');
@@ -20,21 +21,11 @@ const options = program.opts();
 if (options.list) {
 	let co = urlcheck()
 	if(co == 1){
-		try {	
-			const { urlt } = require(`./config.json`);
-			request(`${urlt}:3000/port-foward`, function (error, response, body) {
-				fs.writeFileSync(`./bin/list.json`, body);
-			});		
-			const data = fs.readFileSync(`./bin/list.json`);
-			listprint(data);
-		} catch (error) {
-			console.log("list.json파일이 생성하는중.. 명령어를 한번더 입력해주세요.")
-			const { urlt } = require(`./config.json`);
-			request(`${urlt}:3000/port-foward`, function (error, response, body) {
-				fs.writeFileSync(`./bin/list.json`, body);
-			});	
-		}
+		listget();
+		listprint();
 	}
+
+
 } else if (options.re) {
 	inquirer.prompt([{
 		type: "input",
@@ -71,32 +62,10 @@ if (options.list) {
 }
 
 
-function listprint(data){
-	const json = JSON.parse(data);
-	// instantiate
-	let table = new Table({
-		head: ['NUM', 'id', 'name', 'sourcePort', 'ip', 'destPort']
-		, colWidths: [5, 12, 16, 16, 18, 10],
-
-	});
-	for (let index = 0; index < json.count; index++) {
-		table.push([
-			index,
-			json.data[index].id,
-			json.data[index].text.name,
-			json.data[index].text.sourcePort,
-			json.data[index].text.ip,
-			json.data[index].text.destPort,
-		]);
-	}
-	console.log(table.toString());
-
-}
-
 //url이 json으로 저장되어 있는지 확인
 function urlcheck() {
 	try {
-		fs.readFileSync(`./bin/config.json`, 'utf8');
+		fs.readFileSync(`${path.dirname(__filename)}/config.json`, 'utf8');
 		return 1;
 	} catch (error) {
 		inquirer.prompt([{
@@ -117,15 +86,46 @@ function urlcheck() {
 
 }
 
+//리스트 불려오기
+function listget() {
+	const { urlt } = require("./config.json");
+	request(`${urlt}:3000/port-foward`, function (error, response, body) {
+		fs.writeFileSync(`${path.dirname(__filename)}/list.json`, body);
+	});
+}
+
 //파일에 정보를 등록하기
 function add(url) {
 	const j = {
 		urlt: url
 	}
 	const json = JSON.stringify(j)
-	fs.writeFile(`./bin/config.json`, json, 'utf8', function (err, data) {
+	fs.writeFile(`${path.dirname(__filename)}/config.json`, json, 'utf8', function (err, data) {
 		console.log("등록이 완료되었습니다.");
 	});
+}
+
+//리스트 출력하기
+function listprint() {
+	const data = fs.readFileSync(`${path.dirname(__filename)}/list.json`);
+	const json = JSON.parse(data);
+	// instantiate
+	let table = new Table({
+		head: ['NUM', 'id', 'name', 'sourcePort', 'ip', 'destPort']
+		, colWidths: [5, 12, 16, 16, 18, 10],
+
+	});
+	for (let index = 0; index < json.count; index++) {
+		table.push([
+			index,
+			json.data[index].id,
+			json.data[index].text.name,
+			json.data[index].text.sourcePort,
+			json.data[index].text.ip,
+			json.data[index].text.destPort,
+		]);
+	}
+	console.log(table.toString());
 }
 
 //포트 추가하기
@@ -239,7 +239,7 @@ function addport() {
 //포트포워드 삭제하기
 function delask(input) {
 	const { urlt } = require("./config.json");
-	const data = fs.readFileSync(`./bin/list.json`);
+	const data = fs.readFileSync(`${path.dirname(__filename)}/list.json`);
 	const json = JSON.parse(data);
 
 	if(input > json.count){
@@ -275,17 +275,14 @@ function delask(input) {
 					url: urlt + ":3000/port-foward/" + json.data[input].id,
 					method: 'DELETE'
 				};
+
 				function callback(error, response, body) {
 					if (!error && response.statusCode == 200) {
-						if(body == JSON.stringify({"result":false,"error":"index error"})){
-							console.log("오류가 나왔서요.. 소프트웨어 제작자에게 문의 주세요.");
-						}else{
-							console.log("성공적으로 삭제 처리했서요.");
-							fs.writeFileSync(`./bin/list.json`, body);
-						}
+						fs.writeFileSync(`${path.dirname(__filename)}/list.json`, body);
 					}
 				}
 				request(options, callback);
+				console.log("아래에 오류가 나지 않으면 삭제요청을 성공적으로 보낸거니 약 1분 젇도 기다려주세요.");
 			} else if (answer.deletask == "n") {
 				console.log("사용자가 취소를 해서 종료 합니다.");
 				return;
