@@ -6,7 +6,7 @@ const inquirer = require('inquirer');
 const request = require("request");
 const fs = require('fs');
 const Table = require('cli-table3');
-const { resolve } = require('path');
+const ip = require('ip')
 
 //옵션
 program
@@ -131,7 +131,6 @@ function listprint() {
 //포트 추가하기
 function addport() {
 	let arr = new Array;
-	let count = 0;
 	inquirer.prompt([{
 		type: "input",
 		name: "input",
@@ -149,10 +148,14 @@ function addport() {
 			inquirer.prompt([{
 				type: "input",
 				name: "input",
-				message: '내부ip를 입력해주세요.'
+				message: '내부ip를 입력해주세요.(단 이 컴퓨터 ip면 `ip`라고만 입력해주세요)'
 
 			}]).then(function (answer) {
-				arr[2] = answer.input;
+				if(answer.input == 'ip'){
+					arr[2] = ip.address();
+				}else{
+					arr[2] = answer.input;
+				}
 				inquirer.prompt([{
 					type: "input",
 					name: "input",
@@ -219,25 +222,6 @@ function addport() {
 									]);
 									console.log(table.toString());
 									console.log("성공적으로 데이터를 보냈서요!");
-								} else {
-									const json = JSON.parse(body);
-									if (!error && response.statusCode == 200) {
-										let table = new Table({
-											head: ['name', 'sourcePort', 'ip', 'protocol', 'destPort']
-											, colWidths: [12, 16, 16, 18, 10],
-
-										});
-										table.push([
-											json.result[0].id,
-											json.result[0].text.name,
-											json.result[0].text.sourcePort,
-											json.result[0].text.ip,
-											json.result[0].text.destPort,
-										]);
-										console.log("음... 데이터가 잘못 된거 같해요.. 다시 보시고 시도해 주세요.");
-										console.log(table.toString());
-
-									}
 								}
 							}
 							request(options, callback);
@@ -258,6 +242,10 @@ function delask(input) {
 	const data = fs.readFileSync(`${path.dirname(__filename)}/list.json`);
 	const json = JSON.parse(data);
 
+	if(input > json.count){
+		console.log("잘못된 값을 입력해서 종료합니다. 현재 등록한 숫자는" + json.count +"개 입니다." )
+		return;
+	}else{
 	//찾은거 출력하기
 	let table = new Table({
 		head: ['NUM', 'id', 'name', 'sourcePort', 'ip', 'destPort']
@@ -301,5 +289,6 @@ function delask(input) {
 			}
 		});
 
+	}
 }
 
