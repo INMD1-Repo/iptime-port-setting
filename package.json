@@ -1,6 +1,6 @@
 {
-  "name": "iport",
-  "version": "1.0.0",
+  "name": "iptime-port-setting ",
+  "version": "1.0.4",
   "description": "개인 또는 단체에서 사용하기 때문에 다운받지 마세요",
   "main": "bin/app.js",
   "bin": {
