@@ -35,8 +35,6 @@ if (options.list) {
 			});	
 		}
 	}
-
-
 } else if (options.re) {
 	inquirer.prompt([{
 		type: "input",
@@ -94,6 +92,7 @@ function listprint(data){
 	console.log(table.toString());
 
 }
+
 //url이 json으로 저장되어 있는지 확인
 function urlcheck() {
 	try {
@@ -118,7 +117,6 @@ function urlcheck() {
 
 }
 
-
 //파일에 정보를 등록하기
 function add(url) {
 	const j = {
@@ -129,8 +127,6 @@ function add(url) {
 		console.log("등록이 완료되었습니다.");
 	});
 }
-
-
 
 //포트 추가하기
 function addport() {
