@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 const { Command } = require('commander');
 const program = new Command();
-const path = require('path')
 const inquirer = require('inquirer');
 const request = require("request");
 const fs = require('fs');
