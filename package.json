@@ -1,6 +1,6 @@
 {
-  "name": "iptime-port-setting ",
-  "version": "1.0.4",
+  "name": "iptime-port-setting",
+  "version": "1.0.0",
   "description": "개인 또는 단체에서 사용하기 때문에 다운받지 마세요",
   "main": "bin/app.js",
   "bin": {
@@ -26,10 +26,11 @@
     "Port",
     "forwarding"
   ],
-  "author": "INMD1",
+  "author": "inmd_1234",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/INMD1/iptime-port-setting/issues"
   },
-  "homepage": "https://github.com/INMD1/iptime-port-setting#readme"
+  "homepage": "https://github.com/INMD1/iptime-port-setting#readme",
+  "devDependencies": {}
 }
