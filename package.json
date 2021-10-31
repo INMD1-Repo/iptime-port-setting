@@ -1,6 +1,6 @@
 {
   "name": "iptime-port-setting",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "외부에서 내부에 설정된 iptime 포트포워딩을 설정 할수 있습니다.",
   "main": "bin/app.js",
   "bin": {
