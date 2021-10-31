@@ -6,26 +6,25 @@ const inquirer = require('inquirer');
 const request = require("request");
 const fs = require('fs');
 const Table = require('cli-table3');
-const ip = require('ip')
-
+const ip = require('ip');
+const spin = require('io-spin')
 //옵션
 program
 	.option("-l, --list", "설정한 리스트를 보여드림니다")
 	.option("-c, --creat", "포트포워드 설정 합니다.")
 	.option("-d, --delete", "포트포워드 설정한 값을 삭제합니다.")
 	.option("-r, --re", "json에 저장한 ip를 (다시)설정합니다.")
+
 program.parse(process.argv);
 
 const options = program.opts();
 
 if (options.list) {
 	let co = urlcheck()
-	if(co == 1){
+	if (co == 1) {
 		listget();
 		listprint();
 	}
-
-
 } else if (options.re) {
 	inquirer.prompt([{
 		type: "input",
@@ -151,9 +150,9 @@ function addport() {
 				message: '내부ip를 입력해주세요.(단 이 컴퓨터 ip면 `ip`라고만 입력해주세요)'
 
 			}]).then(function (answer) {
-				if(answer.input == 'ip'){
+				if (answer.input == 'ip') {
 					arr[2] = ip.address();
-				}else{
+				} else {
 					arr[2] = answer.input;
 				}
 				inquirer.prompt([{
@@ -208,20 +207,19 @@ function addport() {
 							function callback(error, response, body) {
 								const json = JSON.parse(body)
 								if (json.result[0] != []) {
-									let table = new Table({
-										head: ['name', 'sourcePort', 'ip', 'protocol', 'destPort']
-										, colWidths: [12, 16, 16, 18, 10],
+									//일정 대시간 랜덤으로 돌리기
 
-									});
-									table.push([
-										json.result[0].id,
-										json.result[0].text.name,
-										json.result[0].text.sourcePort,
-										json.result[0].text.ip,
-										json.result[0].text.destPort,
-									]);
-									console.log(table.toString());
-									console.log("성공적으로 데이터를 보냈서요!");
+									const spinner = spin('iptime을 재시작중입니다.')
+
+									spinner.start()
+									stop()
+									function stop() {
+										setTimeout(function () {
+											spinner.stop()
+											console.log('✔ 성공적으로 데이터를 보냈서요! `iport -l`을 다시 실행해주세요.');
+											listget();
+										}, 68000)
+									}
 								}
 							}
 							request(options, callback);
@@ -242,52 +240,64 @@ function delask(input) {
 	const data = fs.readFileSync(`${path.dirname(__filename)}/list.json`);
 	const json = JSON.parse(data);
 
-	if(input > json.count){
-		console.log("잘못된 값을 입력해서 종료합니다. 현재 등록한 숫자는" + json.count +"개 입니다." )
+	if (input > json.count) {
+		console.log("잘못된 값을 입력해서 종료합니다. 현재 등록한 숫자는" + json.count + "개 입니다.")
 		return;
-	}else{
-	//찾은거 출력하기
-	let table = new Table({
-		head: ['NUM', 'id', 'name', 'sourcePort', 'ip', 'destPort']
-		, colWidths: [5, 12, 16, 16, 18, 10],
+	} else {
+		//찾은거 출력하기
+		let table = new Table({
+			head: ['NUM', 'id', 'name', 'sourcePort', 'ip', 'destPort']
+			, colWidths: [5, 12, 16, 16, 18, 10],
 
-	});
-	table.push([
-		input,
-		json.data[input].id,
-		json.data[input].text.name,
-		json.data[input].text.sourcePort,
-		json.data[input].text.ip,
-		json.data[input].text.destPort,
-	]);
-	console.log(table.toString());
-
-	//마지막 물어보기
-	inquirer.prompt([{
-		type: "input",
-		name: "deletask",
-		message: '정말로 이 설정을 삭제하시겟습니까?(y/n)'
-
-	}])
-		.then(function (answer) {
-			if (answer.deletask == "y") {
-				const options = {
-					url: urlt + ":3000/port-foward/" + json.data[input].id,
-					method: 'DELETE'
-				};
-
-				function callback(error, response, body) {
-					if (!error && response.statusCode == 200) {
-						fs.writeFileSync(`${path.dirname(__filename)}/list.json`, body);
-					}
-				}
-				request(options, callback);
-				console.log("아래에 오류가 나지 않으면 삭제요청을 성공적으로 보낸거니 약 1분 젇도 기다려주세요.");
-			} else if (answer.deletask == "n") {
-				console.log("사용자가 취소를 해서 종료 합니다.");
-				return;
-			}
 		});
+		table.push([
+			input,
+			json.data[input].id,
+			json.data[input].text.name,
+			json.data[input].text.sourcePort,
+			json.data[input].text.ip,
+			json.data[input].text.destPort,
+		]);
+		console.log(table.toString());
+
+		//마지막 물어보기
+		inquirer.prompt([{
+			type: "input",
+			name: "deletask",
+			message: '정말로 이 설정을 삭제하시겟습니까?(y/n)'
+
+		}])
+			.then(function (answer) {
+				if (answer.deletask == "y") {
+					const options = {
+						url: urlt + ":3000/port-foward/" + json.data[input].id,
+						method: 'DELETE'
+					};
+
+					function callback(error, response, body) {
+						if (!error && response.statusCode == 200) {
+							fs.writeFileSync(`${path.dirname(__filename)}/list.json`, body);
+						}
+					}
+					request(options, callback);
+
+					//일정 대시간 랜덤으로 돌리기
+					const spinner = spin('iptime을 재시작중입니다.')
+
+					spinner.start()
+					stop()
+					function stop() {
+						setTimeout(function () {
+							spinner.stop()
+							console.log('✔ iptime 이 재부팅 다되었습니다. `iport -l`을 다시 실행해주세요.');
+							listget();
+						}, 68000)
+					}
+				} else if (answer.deletask == "n") {
+					console.log("사용자가 취소를 해서 종료 합니다.");
+					return;
+				}
+			});
 
 	}
 }

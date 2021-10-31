@@ -11,6 +11,7 @@
     "cli-table3": "^0.6.0",
     "commander": "^8.3.0",
     "inquirer": "^8.2.0",
+    "io-spin": "^0.4.1",
     "ip": "^1.1.5",
     "listr": "^0.14.3",
     "request": "^2.88.2"
@@ -31,6 +32,5 @@
   "bugs": {
     "url": "https://github.com/INMD1/iptime-port-setting/issues"
   },
-  "homepage": "https://github.com/INMD1/iptime-port-setting#readme",
-  "devDependencies": {}
+  "homepage": "https://github.com/INMD1/iptime-port-setting#readme"
 }
