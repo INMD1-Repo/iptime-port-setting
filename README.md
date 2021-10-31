@@ -10,7 +10,7 @@
 commander, inquirer, request, cli-table3, fs, ip
 ```
 
-파일을 다운받은후 아래에 코드를 입력해주세요.<br>
+파일을 다운받은후 디렉토리 폴더로 이동을 해서 아래에 코드를 입력해주세요.<br>
 
 npm install -g
 
