@@ -208,9 +208,7 @@ function addport() {
 								const json = JSON.parse(body)
 								if (json.result[0] != []) {
 									//일정 대시간 랜덤으로 돌리기
-
 									const spinner = spin('iptime을 재시작중입니다.')
-
 									spinner.start()
 									stop()
 									function stop() {
