@@ -3,11 +3,12 @@ const { Command } = require('commander');
 const program = new Command();
 const path = require('path')
 const inquirer = require('inquirer');
-const request = require("request");
 const fs = require('fs');
 const Table = require('cli-table3');
 const ip = require('ip');
-const spin = require('io-spin')
+const spin = require('io-spin');
+const axios = require('axios')
+
 //옵션
 program
 	.option("-l, --list", "설정한 리스트를 보여드림니다")
@@ -88,9 +89,10 @@ function urlcheck() {
 //리스트 불려오기
 function listget() {
 	const { urlt } = require("./config.json");
-	request(`${urlt}:3000/port-foward`, function (error, response, body) {
-		fs.writeFileSync(`${path.dirname(__filename)}/list.json`, body);
-	});
+	axios.get(urlt+':3000/port-foward').then((response) => 
+	fs.writeFileSync(`${path.dirname(__filename)}/list.json`, JSON.stringify(response.data))
+	)
+
 }
 
 //파일에 정보를 등록하기
@@ -183,9 +185,6 @@ function addport() {
 					}]).then(function (answer) {
 						if (answer.yn == "y") {
 							const { urlt } = require("./config.json");
-							const headers = {
-								'Content-Type': 'application/json'
-							};
 
 							const dataString = [
 								{
@@ -196,31 +195,23 @@ function addport() {
 									"destPort": arr[3]
 								}
 							];
+						 axios.post(urlt + ":3000/port-foward", JSON.stringify(dataString),  {
+							headers: {
+							  "Content-Type": `application/json`,
+							},
+						  })
 
-							const options = {
-								url: urlt + ":3000/port-foward",
-								method: 'POST',
-								headers: headers,
-								body: JSON.stringify(dataString)
-							};
-
-							function callback(error, response, body) {
-								const json = JSON.parse(body)
-								if (json.result[0] != []) {
-									//일정 대시간 랜덤으로 돌리기
-									const spinner = spin('iptime을 재시작중입니다.')
-									spinner.start()
-									stop()
-									function stop() {
-										setTimeout(function () {
-											spinner.stop()
-											console.log('✔ 성공적으로 데이터를 보냈서요! `iport -l`을 다시 실행해주세요.');
-											listget();
-										}, 68000)
-									}
-								}
-							}
-							request(options, callback);
+						  //훼이크
+						  const spinner = spin('iptime을 재시작중입니다.')
+						  spinner.start()
+						  stop()
+						  function stop() {
+							  setTimeout(function () {
+								  spinner.stop()
+								  console.log('✔ 성공적으로 데이터를 보냈서요! `iport -l`을 다시 실행해주세요.');
+								  listget();
+							  }, 68000)
+						  }						  
 						} else {
 							console.log("사용자가 취소를 해서 종료 합니다.");
 							return;
@@ -267,18 +258,10 @@ function delask(input) {
 		}])
 			.then(function (answer) {
 				if (answer.deletask == "y") {
-					const options = {
-						url: urlt + ":3000/port-foward/" + json.data[input].id,
-						method: 'DELETE'
-					};
 
-					function callback(error, response, body) {
-						if (!error && response.statusCode == 200) {
-							fs.writeFileSync(`${path.dirname(__filename)}/list.json`, body);
-						}
-					}
-					request(options, callback);
-
+					axios.delete(urlt + ":3000/port-foward/" + json.data[input].id).then((response) => 
+						fs.writeFileSync(`${path.dirname(__filename)}/list.json`, JSON.stringify(response.data))
+					);
 					//일정 대시간 랜덤으로 돌리기
 					const spinner = spin('iptime을 재시작중입니다.')
 
