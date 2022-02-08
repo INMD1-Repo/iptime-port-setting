@@ -89,7 +89,7 @@ function urlcheck() {
 //리스트 불려오기
 function listget() {
 	const { urlt } = require("./config.json");
-	axios.get(urlt+':3000/port-foward').then((response) => 
+	axios.get(urlt+':3000/port-forward').then((response) => 
 	fs.writeFileSync(`${path.dirname(__filename)}/list.json`, JSON.stringify(response.data))
 	)
 
@@ -180,7 +180,7 @@ function addport() {
 					inquirer.prompt([{
 						type: "input",
 						name: "yn",
-						message: '설정을 iptime으로 보내겟습니까?'
+						message: '설정을 iptime으로 보내겟습니까? (y/n)'
 
 					}]).then(function (answer) {
 						if (answer.yn == "y") {
@@ -195,7 +195,7 @@ function addport() {
 									"destPort": arr[3]
 								}
 							];
-						 axios.post(urlt + ":3000/port-foward", JSON.stringify(dataString),  {
+						 axios.post(urlt + ":3000/port-forward", JSON.stringify(dataString),  {
 							headers: {
 							  "Content-Type": `application/json`,
 							},
