@@ -259,9 +259,10 @@ function delask(input) {
 			.then(function (answer) {
 				if (answer.deletask == "y") {
 
-					axios.delete(urlt + ":3000/port-foward/" + json.data[input].id).then((response) => 
-						fs.writeFileSync(`${path.dirname(__filename)}/list.json`, JSON.stringify(response.data))
-					);
+					axios.delete(urlt + ":3000/port-forward/" + json.data[input].id)
+					.then((response) => 
+						fs.writeFileSync(`${path.dirname(__filename)}/list.json`, JSON.stringify(response.data)),
+					)
 					//일정 대시간 랜덤으로 돌리기
 					const spinner = spin('iptime을 재시작중입니다.')
 
